@@ -1,5 +1,7 @@
 {
   "name": "pushapeDemo",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }

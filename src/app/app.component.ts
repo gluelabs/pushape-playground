@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-
 import { Platform } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { PushapeService, PushapeNotification } from './services/pushape.service';
+import { version } from '../../package.json';
+import { PlaygroundService } from './services/playground.service';
 
 @Component({
   selector: 'app-root',
@@ -11,59 +13,58 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 })
 export class AppComponent implements OnInit {
   public selectedIndex = 0;
+  public version: string = version;
   public appPages = [
     {
-      title: 'Inbox',
-      url: '/folder/Inbox',
-      icon: 'mail'
+      title: 'Home',
+      url: '/home',
+      icon: 'home'
     },
     {
-      title: 'Outbox',
-      url: '/folder/Outbox',
-      icon: 'paper-plane'
-    },
-    {
-      title: 'Favorites',
-      url: '/folder/Favorites',
-      icon: 'heart'
-    },
-    {
-      title: 'Archived',
-      url: '/folder/Archived',
-      icon: 'archive'
-    },
-    {
-      title: 'Trash',
-      url: '/folder/Trash',
-      icon: 'trash'
-    },
-    {
-      title: 'Spam',
-      url: '/folder/Spam',
-      icon: 'warning'
+      title: 'The Project',
+      url: '/project',
+      icon: 'information-circle'
     }
   ];
-  public labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
+
+  
 
   constructor(
     private platform: Platform,
     private splashScreen: SplashScreen,
-    private statusBar: StatusBar
+    private statusBar: StatusBar,
+    private pushape: PushapeService,
+    private playground: PlaygroundService
   ) {
     this.initializeApp();
   }
+
+  push_id: string;
 
   initializeApp() {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+      if(this.playground.isNotificationActivated()){
+        console.log("[APPCOMPONENT] Notifications Enabled");
+        const pushapeConfig = this.playground.getPushapeDefaultConfig();
+        this.pushape.init(pushapeConfig);
+      }else{
+        console.log("[APPCOMPONENT] Notifications Disabled");
+      }
+      
     });
   }
 
   ngOnInit() {
-    const path = window.location.pathname.split('folder/')[1];
-    if (path !== undefined) {
-      this.selectedIndex = this.appPages.findIndex(page => page.title.toLowerCase() === path.toLowerCase());
-    }
+
+    this.pushape.notification$.subscribe(
+      (notification: PushapeNotification) => {
+        //Here you can trigger routing events into 
+        //your application when notifications happens
+      }
+    )
   }
+
+
 }

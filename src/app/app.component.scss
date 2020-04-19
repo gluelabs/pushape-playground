@@ -117,3 +117,10 @@ ion-note {
 ion-item.selected {
   --color: var(--ion-color-primary);
 }
+#version{
+  height: 30px;
+  display: block;
+  line-height: 30px;
+  text-align: center;
+  color: #555;
+}

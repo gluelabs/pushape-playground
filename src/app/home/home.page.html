@@ -1,0 +1,103 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Pushape Playground</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-label>
+        Notification:
+        <ion-badge *ngIf="notificationEnabled" color="success">Enabled</ion-badge>
+        <ion-badge *ngIf="!notificationEnabled" color="danger">Disabled</ion-badge>
+      </ion-label>
+      <ion-toggle [(ngModel)]="notificationEnabled"
+        data-no-disabled="!pushapeStatus || pushapeStatus?.subscription_status=='pending'"
+        (ionChange)="setNotificationStatus($event)"></ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>App Id:
+        <ion-spinner name="lines-small"
+          *ngIf="notificationEnabled && (!pushapeStatus || pushapeStatus?.subscription_status=='pending')">
+        </ion-spinner>
+        <span *ngIf="pushapeStatus && (pushapeStatus.app_id == defaultAppId); else custom">
+          <ion-badge color="success">Pushape Default</ion-badge>
+        </span>
+        <ng-template #custom>
+          <span>
+            {{pushapeStatus?.app_id}}
+            <ion-badge color="warning">Custom</ion-badge>
+          </span>
+        </ng-template>
+
+      </ion-label>
+      <ion-button size="small" (click)="changeAppId()" [disabled]="!notificationEnabled">Change</ion-button>
+
+    </ion-item>
+
+
+    <ion-item>
+      <ion-label>
+        Pushape PushId:
+        <ion-spinner name="lines-small" *ngIf="!pushapeStatus || pushapeStatus?.subscription_status=='pending'">
+        </ion-spinner>
+        <span *ngIf="pushapeStatus?.subscription_status=='unsubscribed' || !notificationEnabled; else pushId">
+          N.A.
+        </span>
+        <ng-template #pushId>
+          {{pushapeStatus?.push_id}}
+        </ng-template>
+      </ion-label>
+    </ion-item>
+
+
+    <ion-item>
+      <ion-label>
+        Pushape Subscription:
+        <ion-spinner name="lines-small"
+          *ngIf="notificationEnabled && (!pushapeStatus || !pushapeStatus.subscription_status)"></ion-spinner>
+        <span
+          *ngIf="pushapeStatus?.subscription_status=='unsubscribed' || !notificationEnabled; else subscriptionStatus">
+          N.A.
+        </span>
+        <ng-template #subscriptionStatus>
+          {{pushapeStatus?.subscription_status}}
+        </ng-template>
+
+      </ion-label>
+    </ion-item>
+
+
+
+    <ion-item>
+      <ion-label>
+        Internal Id:
+        <ion-spinner name="lines-small"
+          *ngIf="notificationEnabled && (!pushapeStatus)"></ion-spinner>
+        <span
+          *ngIf="pushapeStatus?.subscription_status=='unsubscribed' || !notificationEnabled; else subscriptionStatus">
+          N.A.
+        </span>
+        <ng-template #subscriptionStatus>
+          {{pushapeStatus?.internal_id}}
+        </ng-template>
+
+      </ion-label>
+    </ion-item>
+
+  </ion-list>
+
+  <hr>
+  <p *ngIf="lastNotification">
+    Last Notification Received:
+    {{lastNotification | json}}
+  </p>
+
+
+</ion-content>

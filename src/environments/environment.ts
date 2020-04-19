@@ -3,7 +3,9 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  sender_id: '<YOUR_SENDER_ID>',
+  pushape_app: '<YOUR_PUSHAPE_APP_ID>'
 };
 
 /*
