@@ -1,12 +1,18 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import Pushape from "pushape-cordova-push/www/push";
+
 import { BehaviorSubject } from 'rxjs';
+
+import Pushape from 'pushape-cordova-push/www/push';
+
+// tslint:disable:variable-name
+
 export class PushapeStatus {
   app_id: string | number = null;
   push_id: string = null;
   subscription_status: 'unsubscribed' | 'pending' | 'first_subscription' | 'subscribed' | 'error' = 'unsubscribed';
   internal_id: string = null;
 }
+
 export class PushapeConfiguration {
   pushape: any;
   android: any;
@@ -31,9 +37,11 @@ export class PushapeService {
     push_id: null,
     subscription_status: null,
     internal_id: null
-  }
+  };
+
   readonly status$: BehaviorSubject<PushapeStatus> = new BehaviorSubject(this.status);
   readonly notification$: EventEmitter<PushapeNotification> = new EventEmitter();
+
   private pushapeObject: any;
 
   constructor() { }
@@ -44,69 +52,63 @@ export class PushapeService {
     this.status.subscription_status = 'pending';
     this.propagateStatus();
 
-    if(true) {
-      //Browser && Dev
+    if (true) {
+      // Browser && Dev
       this.pushapeObject = {};
       return;
     } else {
-      //Cordova Environment
+      // Cordova Environment
     }
-
-    
-
-  }
-  private cordovaInit(config: PushapeConfiguration){
-    this.pushapeObject = Pushape.init(config);
-
-    this.pushapeObject.on('registration',
-      (data) => {
-        this.setRegistrationsData(JSON.parse(data));
-      },
-      (e) => {
-        this.status.subscription_status = 'error';
-        this.propagateStatus();
-      });
-
-    this.pushapeObject.on('notification', (data) => {
-      this.onNotification(data);
-    });
-
-    this.pushapeObject.on('error', (e) => {
-      // e.message
-      console.log('[PUSHAPE] Error', e);
-    });
   }
 
   unregister() {
     console.log('[PUSHAPE] Unregister');
 
     this.pushapeObject.unregister(
-      (r) => {
-        //Success
+      (r: any) => {
         console.log('[PUSHAPE] Unregister Success', r);
-        this.status.subscription_status = "unsubscribed";
+        this.status.subscription_status = 'unsubscribed';
         this.propagateStatus();
       },
-      (e) => {
-        //Error
+      (e: any) => {
         console.log('[PUSHAPE] Unregister Error', e);
-        this.status.subscription_status = "unsubscribed";
+        this.status.subscription_status = 'unsubscribed';
         this.propagateStatus();
       }
     );
   }
 
+  private cordovaInit(config: PushapeConfiguration) {
+    this.pushapeObject = Pushape.init(config);
 
+    this.pushapeObject.on('registration',
+      (data: any) => {
+        this.setRegistrationsData(JSON.parse(data));
+      },
+      (e: any) => {
+        this.status.subscription_status = 'error';
+        this.propagateStatus();
+      });
+
+    this.pushapeObject.on('notification', (data: any) => {
+      this.onNotification(data);
+    });
+
+    this.pushapeObject.on('error', (e: any) => {
+      // e.message
+      console.log('[PUSHAPE] Error', e);
+    });
+  }
 
   /**
    * Set locally the registration data and propagate
    * them to the subscribed functions
-   * @param data 
+   *
    */
-  private setRegistrationsData(data) {
+  private setRegistrationsData(data: any) {
     console.log('[PUSHAPE] RegistrationsData', data);
     this.status.push_id = data.push_id;
-    this.status.subscription_status = data.status == 1 ? 'first_subscription' : 'subscribed';
+    this.status.subscription_status = data.status === 1 ? 'first_subscription' : 'subscribed';
     this.propagateStatus();
   }
   /**
@@ -119,7 +121,6 @@ export class PushapeService {
   /**
    * It's triggered when a Notification occur and
    * propagate it to the subscribed funcions
-   * @param data 
    */
   private onNotification(data: PushapeNotification) {
     // data.message,

@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment';
-import { PushapeService } from './pushape.service';
 import { Device } from '@ionic-native/device/ngx';
+
 import { BehaviorSubject } from 'rxjs';
 
+import { environment } from 'src/environments/environment';
+import { PushapeService } from 'src/app/services/pushape.service';
+
 /**
- * Playground Service include all the Custom -extra pushape- 
+ * Playground Service include all the Custom -extra pushape-
  * functions needed to this app
  */
 @Injectable({
@@ -14,9 +16,10 @@ import { BehaviorSubject } from 'rxjs';
 export class PlaygroundService {
   isNotificationActivated$: BehaviorSubject<boolean> = new BehaviorSubject(this.isNotificationActivated());
   constructor(
-    private pushape: PushapeService,
-    private device: Device
-  ) { }
+    private readonly pushape: PushapeService,
+    private readonly device: Device
+  ) {
+  }
 
   /**
    * Return the app id wrapped into a promise.
@@ -25,28 +28,26 @@ export class PlaygroundService {
    */
   getAppId(): any {
     const appId = window.localStorage.getItem('appId');
-    if (appId) return appId;
-    else return environment.pushape_app;
+    return appId || environment.pushape_app;
   }
 
   /**
    * Set a different AppId for testing Purpose.
-   * This scenario is not the normal Scenario 
+   * This scenario is not the normal Scenario
    * You are expected to use.
    */
-  setAppId(appId) {
+  setAppId(appId: string) {
     window.localStorage.setItem('appId', appId);
   }
 
   /**
    * Set a different AppId for testing Purpose.
-   * This scenario is not the normal Scenario 
+   * This scenario is not the normal Scenario
    * You are expected to use.
    */
   resetAppId() {
     window.localStorage.removeItem('appId');
   }
-
 
   /**
    * Set into the storage if notifications are active or disactive
@@ -57,34 +58,35 @@ export class PlaygroundService {
     this.isNotificationActivated$.next(targetStatus);
     window.localStorage.setItem('notificationStatus', activated);
   }
+
   /**
-   * Return a boolen indicating if the notification are setted 
+   * Return a boolen indicating if the notification are setted
    * Activated or Not
    */
   isNotificationActivated() {
-    return window.localStorage.getItem('notificationStatus') == 'DISACTIVATED' ? false : true;
+    return window.localStorage.getItem('notificationStatus') === 'DISACTIVATED' ? false : true;
   }
   /**
    * Reload Pushape Subscription with a custom appId
    */
   renewPushape(appId) {
-    let pushapeConfig = {
+    const pushapeConfig = {
       enabled: true,
       android: {
-        'senderID': environment.sender_id
+        senderID: environment.sender_id
       },
       ios: {
-        //OPTIONS
-        alert: "true",
+        // OPTIONS
+        alert: 'true',
         badge: true,
-        sound: "false"
+        sound: 'false'
       },
       pushape: {
-        "id_app": environment.pushape_app, //your pushape app id
-        "platform": this.device.platform, //ios or android
-        "uuid": this.device.uuid
+        id_app: environment.pushape_app, // your pushape app id
+        platform: this.device.platform, // ios or android
+        uuid: this.device.uuid
       },
-      "id_user": "OPTIONAL" //YOUR USER ID, in order to send notification using your custom id
+      id_user: 'OPTIONAL' // YOUR USER ID, in order to send notification using your custom id
     };
 
     pushapeConfig.pushape.id_app = appId;
@@ -94,32 +96,32 @@ export class PlaygroundService {
     }, 1000);
   }
 
-
   getPushapeDefaultConfig() {
     /**
-       * We exec the following line in order to allow to customize the app id
-       * NORMALLY we DO NOT expect the appID to change runtime
-       * In your app you can just pass the configuration
-       * wiht your app id, so remove this line
-       */
+     * We exec the following line in order to allow to customize the app id
+     * NORMALLY we DO NOT expect the appID to change runtime
+     *
+     * In your app you can just pass the configuration wiht your app id, so remove this line.
+     */
+    // tslint:disable-next-line:variable-name
     const id_app = this.getAppId();
     return {
       enabled: true,
       android: {
-        'senderID': environment.sender_id
+        senderID: environment.sender_id
       },
       ios: {
-        //OPTIONS
-        alert: "true",
+        // OPTIONS
+        alert: 'true',
         badge: true,
-        sound: "false"
+        sound: 'false'
       },
       pushape: {
-        "id_app": id_app, //your pushape app id
-        "platform": this.device.platform, //ios or android
-        "uuid": this.device.uuid
+        id_app, // your pushape app id
+        platform: this.device.platform, // ios or android
+        uuid: this.device.uuid
       },
-      "id_user": "Pushape_user" //YOUR USER ID, in order to send notification using your custom id
+      id_user: 'Pushape_user' // YOUR USER ID, in order to send notification using your custom id
     };
   }
 }
