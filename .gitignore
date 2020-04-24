@@ -30,4 +30,5 @@ npm-debug.log*
 /plugins
 /www
 /signing
-src/environments/
+src/environments
+google-services.json
