@@ -50,15 +50,9 @@ export class PushapeService {
     this.status.app_id = config.pushape.id_app;
     this.status.internal_id = config.id_user;
     this.status.subscription_status = 'pending';
-    this.propagateStatus();
 
-    if (true) {
-      // Browser && Dev
-      this.pushapeObject = {};
-      return;
-    } else {
-      // Cordova Environment
-    }
+    this.propagateStatus();
+    this.cordovaInit(config);
   }
 
   unregister() {
