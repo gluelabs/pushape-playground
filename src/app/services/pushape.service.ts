@@ -79,7 +79,7 @@ export class PushapeService {
       (data: any) => {
         this.setRegistrationsData(JSON.parse(data));
       },
-      (e: any) => {
+      () => {
         this.status.subscription_status = 'error';
         this.propagateStatus();
       });
@@ -89,7 +89,6 @@ export class PushapeService {
     });
 
     this.pushapeObject.on('error', (e: any) => {
-      // e.message
       console.log('[PUSHAPE] Error', e);
     });
   }
@@ -106,23 +105,18 @@ export class PushapeService {
     this.propagateStatus();
   }
   /**
-   * Propagare Pushape status changes
+   * Propagate Pushape status changes
    */
   private propagateStatus() {
     this.status = JSON.parse(JSON.stringify(this.status));
     this.status$.next(this.status);
   }
+
   /**
    * It's triggered when a Notification occur and
-   * propagate it to the subscribed funcions
+   * propagate it to the subscribed funcions.
    */
   private onNotification(data: PushapeNotification) {
-    // data.message,
-    // data.title,
-    // data.count,
-    // data.sound,
-    // data.image,
-    // data.additionalData
     console.log('[PUSHAPE] Notification', data);
     this.notification$.emit(data);
   }
