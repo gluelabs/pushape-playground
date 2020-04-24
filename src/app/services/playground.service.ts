@@ -69,20 +69,19 @@ export class PlaygroundService {
   /**
    * Reload Pushape Subscription with a custom appId
    */
-  renewPushape(appId) {
+  renewPushape(appId: string) {
     const pushapeConfig = {
       enabled: true,
       android: {
         senderID: environment.sender_id
       },
       ios: {
-        // OPTIONS
         alert: 'true',
         badge: true,
         sound: 'false'
       },
       pushape: {
-        id_app: environment.pushape_app, // your pushape app id
+        id_app: environment.pushape_app,
         platform: this.device.platform, // ios or android
         uuid: this.device.uuid
       },
@@ -111,13 +110,12 @@ export class PlaygroundService {
         senderID: environment.sender_id
       },
       ios: {
-        // OPTIONS
         alert: 'true',
         badge: true,
         sound: 'false'
       },
       pushape: {
-        id_app, // your pushape app id
+        id_app,
         platform: this.device.platform, // ios or android
         uuid: this.device.uuid
       },
