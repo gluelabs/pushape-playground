@@ -5,16 +5,18 @@ import { BehaviorSubject } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { PushapeService } from 'src/app/services/pushape.service';
+import { PushapeInitOptions } from 'src/app/models/pushape';
 
 /**
  * Playground Service include all the Custom -extra pushape-
  * functions needed to this app
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PlaygroundService {
-  isNotificationActivated$: BehaviorSubject<boolean> = new BehaviorSubject(this.isNotificationActivated());
+  readonly isNotificationActivated$: BehaviorSubject<boolean> = new BehaviorSubject(this.isNotificationActivated());
+
   constructor(
     private readonly pushape: PushapeService,
     private readonly device: Device
@@ -23,17 +25,18 @@ export class PlaygroundService {
 
   /**
    * Return the app id wrapped into a promise.
-   * Try to find appId in local storage (to ovverryde the dafault one).
-   * If It doesn't exists return the Envirinment App Id
+   *
+   * Try to find appId in local storage (to overide the dafault one).
+   * If it doesn't exists return the environment App Id.
    */
-  getAppId(): any {
+  getAppId() {
     const appId = window.localStorage.getItem('appId');
     return appId || environment.pushape_app;
   }
 
   /**
    * Set a different AppId for testing Purpose.
-   * This scenario is not the normal Scenario
+   * This scenario is not the normal flow.
    * You are expected to use.
    */
   setAppId(appId: string) {
@@ -42,7 +45,7 @@ export class PlaygroundService {
 
   /**
    * Set a different AppId for testing Purpose.
-   * This scenario is not the normal Scenario
+   * This scenario is not the normal flow.
    * You are expected to use.
    */
   resetAppId() {
@@ -66,11 +69,12 @@ export class PlaygroundService {
   isNotificationActivated() {
     return window.localStorage.getItem('notificationStatus') === 'DISACTIVATED' ? false : true;
   }
+
   /**
    * Reload Pushape Subscription with a custom appId
    */
   renewPushape(appId: string) {
-    const pushapeConfig = {
+    const pushapeConfig: PushapeInitOptions = {
       enabled: true,
       android: {
         senderID: environment.sender_id
@@ -78,32 +82,31 @@ export class PlaygroundService {
       ios: {
         alert: 'true',
         badge: true,
-        sound: 'false'
+        sound: 'false',
       },
       pushape: {
-        id_app: environment.pushape_app,
+        id_app: appId || environment.pushape_app,
         platform: this.device.platform, // ios or android
-        uuid: this.device.uuid
+        uuid: this.device.uuid,
       },
       id_user: 'OPTIONAL' // YOUR USER ID, in order to send notification using your custom id
     };
 
-    pushapeConfig.pushape.id_app = appId;
     this.pushape.unregister();
+
     setTimeout(() => {
       this.pushape.init(pushapeConfig);
     }, 1000);
   }
 
-  getPushapeDefaultConfig() {
+  getPushapeDefaultConfig(): PushapeInitOptions {
     /**
      * We exec the following line in order to allow to customize the app id
      * NORMALLY we DO NOT expect the appID to change runtime
      *
      * In your app you can just pass the configuration wiht your app id, so remove this line.
      */
-    // tslint:disable-next-line:variable-name
-    const id_app = this.getAppId();
+    const appId = this.getAppId();
     return {
       enabled: true,
       android: {
@@ -115,11 +118,11 @@ export class PlaygroundService {
         sound: 'false'
       },
       pushape: {
-        id_app,
-        platform: this.device.platform, // ios or android
+        id_app: appId,
+        platform: this.device.platform,
         uuid: this.device.uuid
       },
-      id_user: 'Pushape_user' // YOUR USER ID, in order to send notification using your custom id
+      id_user: 'Pushape_user',
     };
   }
 }

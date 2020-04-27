@@ -4,8 +4,14 @@ import { BehaviorSubject } from 'rxjs';
 
 import Pushape from 'pushape-cordova-push/www/push';
 
-// tslint:disable:variable-name
+import {
+  PushapeNotification,
+  PushapeInitOptions,
+  PushEvent,
+  PushapeEventRegistrationData,
+} from 'src/app/models/pushape';
 
+// tslint:disable:variable-name
 export class PushapeStatus {
   app_id: string | number = null;
   push_id: string = null;
@@ -13,23 +19,8 @@ export class PushapeStatus {
   internal_id: string = null;
 }
 
-export class PushapeConfiguration {
-  pushape: any;
-  android: any;
-  ios: any;
-  id_user: any;
-}
-export class PushapeNotification {
-  message?: string;
-  title?: string;
-  count?: string;
-  sound?: string;
-  image?: string;
-  additionalData?: any;
-}
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PushapeService {
   private status: PushapeStatus = {
@@ -40,13 +31,13 @@ export class PushapeService {
   };
 
   readonly status$: BehaviorSubject<PushapeStatus> = new BehaviorSubject(this.status);
-  readonly notification$: EventEmitter<PushapeNotification> = new EventEmitter();
+  readonly notification$: EventEmitter<PhonegapPluginPush.NotificationEventResponse> = new EventEmitter();
 
-  private pushapeObject: any;
+  private pushapeObject: PushapeNotification;
 
   constructor() { }
 
-  init(config: PushapeConfiguration) {
+  init(config: PushapeInitOptions) {
     this.status.app_id = config.pushape.id_app;
     this.status.internal_id = config.id_user;
     this.status.subscription_status = 'pending';
@@ -59,53 +50,54 @@ export class PushapeService {
     console.log('[PUSHAPE] Unregister');
 
     this.pushapeObject.unregister(
-      (r: any) => {
-        console.log('[PUSHAPE] Unregister Success', r);
+      () => {
+        console.log('[PUSHAPE] Unregister success');
         this.status.subscription_status = 'unsubscribed';
         this.propagateStatus();
       },
-      (e: any) => {
-        console.log('[PUSHAPE] Unregister Error', e);
+      () => {
+        console.log('[PUSHAPE] Unregister error');
         this.status.subscription_status = 'unsubscribed';
         this.propagateStatus();
       }
     );
   }
 
-  private cordovaInit(config: PushapeConfiguration) {
+  private cordovaInit(config: PushapeInitOptions) {
     this.pushapeObject = Pushape.init(config);
 
-    this.pushapeObject.on('registration',
-      (data: any) => {
-        this.setRegistrationsData(JSON.parse(data));
-      },
-      () => {
-        this.status.subscription_status = 'error';
-        this.propagateStatus();
-      });
+    // TODO: Try to remove `any` and use real type
+    this.pushapeObject.on(PushEvent.REGISTRATION, (data: any) => {
+      console.log('[PUSHAPE] Data on registration without parse', data),
+      this.setRegistrationsData(JSON.parse(data));
+    });
 
-    this.pushapeObject.on('notification', (data: any) => {
+    this.pushapeObject.on(PushEvent.NOTIFICATION, (data) => {
       this.onNotification(data);
     });
 
-    this.pushapeObject.on('error', (e: any) => {
+    this.pushapeObject.on(PushEvent.ERROR, (e: Error) => {
       console.log('[PUSHAPE] Error', e);
+
+      this.status.subscription_status = 'error';
+      this.propagateStatus();
     });
   }
 
   /**
-   * Set locally the registration data and propagate
-   * them to the subscribed functions
-   *
+   * Set locally the registration data and propagate them to the subscribed functions.
    */
-  private setRegistrationsData(data: any) {
+  private setRegistrationsData(data: PushapeEventRegistrationData) {
     console.log('[PUSHAPE] RegistrationsData', data);
+
     this.status.push_id = data.push_id;
     this.status.subscription_status = data.status === 1 ? 'first_subscription' : 'subscribed';
+
     this.propagateStatus();
   }
+
   /**
-   * Propagate Pushape status changes
+   * Propagate Pushape status changes.
    */
   private propagateStatus() {
     this.status = JSON.parse(JSON.stringify(this.status));
@@ -113,10 +105,9 @@ export class PushapeService {
   }
 
   /**
-   * It's triggered when a Notification occur and
-   * propagate it to the subscribed funcions.
+   * It's triggered when a Notification occur and propagate it to the subscribed funcions.
    */
-  private onNotification(data: PushapeNotification) {
+  private onNotification(data: PhonegapPluginPush.NotificationEventResponse) {
     console.log('[PUSHAPE] Notification', data);
     this.notification$.emit(data);
   }
