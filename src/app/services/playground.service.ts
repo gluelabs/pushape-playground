@@ -15,7 +15,7 @@ import { PushapeInitOptions } from 'src/app/models/pushape';
   providedIn: 'root',
 })
 export class PlaygroundService {
-  readonly isNotificationActivated$: BehaviorSubject<boolean> = new BehaviorSubject(this.isNotificationActivated());
+  readonly isNotificationActivated$ = new BehaviorSubject(this.isNotificationActivated());
 
   constructor(
     private readonly pushape: PushapeService,

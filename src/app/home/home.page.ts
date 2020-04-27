@@ -5,7 +5,7 @@ import { switchMap, filter, tap } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
 
-import { PushapeService, PushapeStatus } from 'src/app/services/pushape.service';
+import { PushapeService } from 'src/app/services/pushape.service';
 import { PlaygroundService } from 'src/app/services/playground.service';
 
 @Component({
@@ -14,37 +14,36 @@ import { PlaygroundService } from 'src/app/services/playground.service';
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage implements OnInit {
-  pushapeStatus?: PushapeStatus;
-  lastNotification?: PhonegapPluginPush.NotificationEventResponse;
 
-  notificationEnabled = this.playground.isNotificationActivated();
+  readonly lastNotification$ = this.pushape.notification$.asObservable().pipe(
+    filter((notification): notification is PhonegapPluginPush.NotificationEventResponse => !!notification),
+    tap(() => this.cd.detectChanges()),
+  );
 
-  defaultAppId: string = environment.pushape_app;
+  readonly pushapeStatus$ = this.pushape.status$.asObservable().pipe(tap(() => this.cd.detectChanges()));
+  readonly notificationEnabled$ = this.playground.isNotificationActivated$.asObservable();
+
+  readonly defaultAppId = environment.pushape_app;
 
   constructor(
-    readonly pushape: PushapeService,
-    private readonly cd: ChangeDetectorRef,
+    private readonly pushape: PushapeService,
     private readonly toast: ToastController,
     private readonly playground: PlaygroundService,
     private readonly alertController: AlertController,
+    private readonly cd: ChangeDetectorRef,
   ) {
   }
 
   ngOnInit() {
-    this.pushape.status$.subscribe((status: PushapeStatus) => {
-      this.pushapeStatus = status;
-      this.cd.detectChanges();
-    });
-
     /**
      * If you need to trigger routing event consider
      * to subscribe to this event emitter in your
      * app.component.ts
+     *
+     * TODO: Need to unsubscribe this stream
      */
-    this.pushape.notification$
+    this.lastNotification$
       .pipe(
-        filter((notification): notification is PhonegapPluginPush.NotificationEventResponse => !!notification),
-        tap((notification) => this.lastNotification = notification),
         switchMap((notification) => {
           return this.toast.create({
             message: notification.title + ': ' + notification.message,
@@ -53,12 +52,6 @@ export class HomePage implements OnInit {
         }),
       )
       .subscribe((toast) => toast.present());
-
-    this.playground.isNotificationActivated$.subscribe((r) => {
-      this.notificationEnabled = r;
-      this.cd.detectChanges();
-    });
-
   }
 
   setNotificationStatus(event: { detail: { checked: boolean } }) {

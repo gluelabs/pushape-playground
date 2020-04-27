@@ -7,25 +7,25 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content *ngIf="pushapeStatus$ | async as pushapeStatus">
   <ion-list>
     <ion-item>
       <ion-label>
         Notification:
         <ion-badge
-          *ngIf="notificationEnabled"
+          *ngIf="(notificationEnabled$ | async)"
           color="success">
           Enabled
         </ion-badge>
         <ion-badge
-          *ngIf="!notificationEnabled"
+          *ngIf="!(notificationEnabled$ | async)"
           color="danger">
           Disabled
         </ion-badge>
       </ion-label>
       <ion-toggle
-        [(ngModel)]="notificationEnabled"
-        data-no-disabled="!pushapeStatus || pushapeStatus?.subscription_status=='pending'"
+        [ngModel]="notificationEnabled$ | async"
+        data-no-disabled="!pushapeStatus || pushapeStatus?.subscription_status === 'pending'"
         (ionChange)="setNotificationStatus($event)"></ion-toggle>
     </ion-item>
 
@@ -34,23 +34,26 @@
         App Id:
         <ion-spinner
           name="lines-small"
-          *ngIf="notificationEnabled && (!pushapeStatus || pushapeStatus?.subscription_status === 'pending')">
+          *ngIf="pushapeStatus?.subscription_status === 'pending'">
         </ion-spinner>
-        <span *ngIf="pushapeStatus && (pushapeStatus?.app_id == defaultAppId); else custom">
+        <span *ngIf="pushapeStatus && (pushapeStatus?.app_id === defaultAppId); else custom">
           <ion-badge color="success">Pushape Default</ion-badge>
         </span>
         <ng-template #custom>
           <span>
-            {{pushapeStatus?.app_id}}
+            {{ pushapeStatus?.app_id }}
             <ion-badge color="warning">Custom</ion-badge>
           </span>
         </ng-template>
+        <span *ngIf="!pushapeStatus">
+          <ion-badge color="error">Pushape inactive - No App Id</ion-badge>
+        </span>
 
       </ion-label>
       <ion-button
         size="small"
         (click)="changeAppId()"
-        [disabled]="!notificationEnabled">
+        [disabled]="!(notificationEnabled$ | async)">
         Change
       </ion-button>
 
@@ -61,10 +64,10 @@
         Pushape PushId:
         <ion-spinner
           name="lines-small"
-          *ngIf="!pushapeStatus || pushapeStatus?.subscription_status=='pending'">
+          *ngIf="pushapeStatus?.subscription_status === 'pending'">
         </ion-spinner>
-        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !notificationEnabled; else pushId">N.A.</span>
-        <ng-template #pushId>{{pushapeStatus?.push_id}}</ng-template>
+        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else pushId">N.A.</span>
+        <ng-template #pushId>{{ pushapeStatus?.push_id }}</ng-template>
       </ion-label>
     </ion-item>
 
@@ -73,8 +76,8 @@
         Pushape Subscription:
         <ion-spinner
           name="lines-small"
-          *ngIf="notificationEnabled && (!pushapeStatus || !pushapeStatus?.subscription_status)"></ion-spinner>
-        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !notificationEnabled; else subscriptionStatus">N.A.</span>
+          *ngIf="(!pushapeStatus || !pushapeStatus?.subscription_status)"></ion-spinner>
+        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else subscriptionStatus">N.A.</span>
         <ng-template #subscriptionStatus>{{pushapeStatus?.subscription_status}}</ng-template>
 
       </ion-label>
@@ -85,8 +88,8 @@
         Internal Id:
         <ion-spinner
           name="lines-small"
-          *ngIf="notificationEnabled && (!pushapeStatus)"></ion-spinner>
-        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !notificationEnabled; else subscriptionStatus">N.A.</span>
+          *ngIf="(!pushapeStatus)"></ion-spinner>
+        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else subscriptionStatus">N.A.</span>
         <ng-template #subscriptionStatus>{{pushapeStatus?.internal_id}}</ng-template>
 
       </ion-label>
@@ -95,9 +98,11 @@
   </ion-list>
 
   <hr>
-  <p *ngIf="lastNotification">
-    Last Notification Received:
-    {{lastNotification | json}}
-  </p>
+  <div
+    class="last-notification-container"
+    *ngIf="lastNotification$ | async as lastNotification">
+    <p>Last Notification received:</p>
+    <div>{{ lastNotification | json }}</div>
+  </div>
 
 </ion-content>

@@ -1,6 +1,6 @@
-import { Injectable, EventEmitter } from '@angular/core';
+import { Injectable } from '@angular/core';
 
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 import Pushape from 'pushape-cordova-push/www/push';
 
@@ -30,8 +30,8 @@ export class PushapeService {
     internal_id: null
   };
 
-  readonly status$: BehaviorSubject<PushapeStatus> = new BehaviorSubject(this.status);
-  readonly notification$: EventEmitter<PhonegapPluginPush.NotificationEventResponse | undefined> = new EventEmitter();
+  readonly status$ = new BehaviorSubject<PushapeStatus>(this.status);
+  readonly notification$ = new Subject<PhonegapPluginPush.NotificationEventResponse | undefined>();
 
   private pushapeObject?: PushapeNotification;
 
@@ -70,10 +70,9 @@ export class PushapeService {
   private cordovaInit(config: PushapeInitOptions) {
     this.pushapeObject = Pushape.init(config) as PushapeNotification;
 
-    // TODO: Try to remove `any` and use real type
-    this.pushapeObject.on(PushEvent.REGISTRATION, (data: any) => {
-      console.log('[PUSHAPE] Data on registration without parse', data),
-      this.setRegistrationsData(JSON.parse(data));
+    this.pushapeObject.on(PushEvent.REGISTRATION, (serializedData: unknown) => {
+      const data: PushapeEventRegistrationData = JSON.parse(serializedData as string);
+      this.setRegistrationsData(data);
     });
 
     this.pushapeObject.on(PushEvent.NOTIFICATION, (data) => {
@@ -92,7 +91,7 @@ export class PushapeService {
    * Set locally the registration data and propagate them to the subscribed functions.
    */
   private setRegistrationsData(data: PushapeEventRegistrationData) {
-    console.log('[PUSHAPE] RegistrationsData', data);
+    console.log('[PUSHAPE] Registration\'s data', data);
 
     this.status.push_id = data.push_id;
     this.status.subscription_status = data.status === 1 ? 'first_subscription' : 'subscribed';
@@ -113,7 +112,7 @@ export class PushapeService {
    */
   private onNotification(data: PhonegapPluginPush.NotificationEventResponse) {
     console.log('[PUSHAPE] Notification', data);
-    this.notification$.emit(data);
+    this.notification$.next(data);
   }
 
 }
