@@ -1,9 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ToastController, AlertController } from '@ionic/angular';
 
+import { switchMap, filter, tap } from 'rxjs/operators';
+
 import { environment } from 'src/environments/environment';
 
-import { PushapeService, PushapeStatus, PushapeNotification } from 'src/app/services/pushape.service';
+import { PushapeService, PushapeStatus } from 'src/app/services/pushape.service';
 import { PlaygroundService } from 'src/app/services/playground.service';
 
 @Component({
@@ -13,7 +15,7 @@ import { PlaygroundService } from 'src/app/services/playground.service';
 })
 export class HomePage implements OnInit {
   pushapeStatus?: PushapeStatus;
-  lastNotification?: PushapeNotification;
+  lastNotification?: PhonegapPluginPush.NotificationEventResponse;
 
   notificationEnabled = this.playground.isNotificationActivated();
 
@@ -39,18 +41,18 @@ export class HomePage implements OnInit {
      * to subscribe to this event emitter in your
      * app.component.ts
      */
-    this.pushape.notification$.subscribe(
-      async (notification: PushapeNotification) => {
-        if (notification) {
-          const toast = await this.toast.create({
+    this.pushape.notification$
+      .pipe(
+        filter((notification): notification is PhonegapPluginPush.NotificationEventResponse => !!notification),
+        tap((notification) => this.lastNotification = notification),
+        switchMap((notification) => {
+          return this.toast.create({
             message: notification.title + ': ' + notification.message,
             duration: 3000,
           });
-          toast.present();
-          this.lastNotification = notification;
-        }
-      }
-    );
+        }),
+      )
+      .subscribe((toast) => toast.present());
 
     this.playground.isNotificationActivated$.subscribe((r) => {
       this.notificationEnabled = r;
@@ -59,8 +61,8 @@ export class HomePage implements OnInit {
 
   }
 
-  setNotificationStatus(e) {
-    const targetStatus = e.detail.checked;
+  setNotificationStatus(event: { detail: { checked: boolean } }) {
+    const targetStatus = event.detail.checked;
     this.playground.setNotificationStatus(targetStatus);
 
     if (targetStatus) {
@@ -112,7 +114,7 @@ export class HomePage implements OnInit {
     await alert.present();
   }
 
-  setAppId(appId: string) {
+  private setAppId(appId: string) {
     console.log('setAppId', appId);
     if (appId) {
       this.playground.setAppId(appId);

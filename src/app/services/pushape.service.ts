@@ -31,7 +31,7 @@ export class PushapeService {
   };
 
   readonly status$: BehaviorSubject<PushapeStatus> = new BehaviorSubject(this.status);
-  readonly notification$: EventEmitter<PhonegapPluginPush.NotificationEventResponse> = new EventEmitter();
+  readonly notification$: EventEmitter<PhonegapPluginPush.NotificationEventResponse | undefined> = new EventEmitter();
 
   private pushapeObject: PushapeNotification;
 
