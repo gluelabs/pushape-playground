@@ -15,7 +15,7 @@ import { PlaygroundService } from 'src/app/services/playground.service';
 })
 export class AppComponent implements OnInit {
   selectedIndex = 0;
-  pushId: string;
+  pushId?: string;
 
   readonly version = version;
   readonly appPages = [

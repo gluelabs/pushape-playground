@@ -13,10 +13,10 @@ import {
 
 // tslint:disable:variable-name
 export class PushapeStatus {
-  app_id: string | number = null;
-  push_id: string = null;
+  app_id: string | number | null = null;
+  push_id: string | null = null;
   subscription_status: 'unsubscribed' | 'pending' | 'first_subscription' | 'subscribed' | 'error' = 'unsubscribed';
-  internal_id: string = null;
+  internal_id: string | null = null;
 }
 
 @Injectable({
@@ -26,14 +26,14 @@ export class PushapeService {
   private status: PushapeStatus = {
     app_id: null,
     push_id: null,
-    subscription_status: null,
+    subscription_status: 'unsubscribed',
     internal_id: null
   };
 
   readonly status$: BehaviorSubject<PushapeStatus> = new BehaviorSubject(this.status);
   readonly notification$: EventEmitter<PhonegapPluginPush.NotificationEventResponse | undefined> = new EventEmitter();
 
-  private pushapeObject: PushapeNotification;
+  private pushapeObject?: PushapeNotification;
 
   constructor() { }
 
@@ -48,6 +48,10 @@ export class PushapeService {
 
   unregister() {
     console.log('[PUSHAPE] Unregister');
+
+    if (!this.pushapeObject) {
+      throw new Error('[PUSHAPE] Cannot complete unregister without a valid pushape object');
+    }
 
     this.pushapeObject.unregister(
       () => {
@@ -64,7 +68,7 @@ export class PushapeService {
   }
 
   private cordovaInit(config: PushapeInitOptions) {
-    this.pushapeObject = Pushape.init(config);
+    this.pushapeObject = Pushape.init(config) as PushapeNotification;
 
     // TODO: Try to remove `any` and use real type
     this.pushapeObject.on(PushEvent.REGISTRATION, (data: any) => {
