@@ -5,7 +5,6 @@ import { BehaviorSubject } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { PushapeService } from 'src/app/services/pushape.service';
-import { PushapeInitOptions } from 'src/app/models/pushape';
 
 /**
  * Playground Service include all the Custom -extra pushape-
@@ -74,7 +73,7 @@ export class PlaygroundService {
    * Reload Pushape Subscription with a custom appId
    */
   renewPushape(appId: string) {
-    const pushapeConfig: PushapeInitOptions = {
+    const pushapeConfig: PhonegapPluginPushapePush.InitPushapeOptions = {
       enabled: true,
       android: {
         senderID: environment.sender_id
@@ -99,7 +98,7 @@ export class PlaygroundService {
     }, 1000);
   }
 
-  getPushapeDefaultConfig(): PushapeInitOptions {
+  getPushapeDefaultConfig(): PhonegapPluginPushapePush.InitPushapeOptions {
     /**
      * We exec the following line in order to allow to customize the app id
      * NORMALLY we DO NOT expect the appID to change runtime

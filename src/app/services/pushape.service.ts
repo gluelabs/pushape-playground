@@ -2,14 +2,9 @@ import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, Subject } from 'rxjs';
 
-import Pushape from 'pushape-cordova-push/www/push';
+import PushapeNotification from 'pushape-cordova-push/www/push';
 
-import {
-  PushapeNotification,
-  PushapeInitOptions,
-  PushEvent,
-  PushapeEventRegistrationData,
-} from 'src/app/models/pushape';
+import { PushEvent } from 'src/app/models/pushape';
 
 // tslint:disable:variable-name
 export class PushapeStatus {
@@ -33,11 +28,11 @@ export class PushapeService {
   readonly status$ = new BehaviorSubject<PushapeStatus>(this.status);
   readonly notification$ = new Subject<PhonegapPluginPush.NotificationEventResponse | undefined>();
 
-  private pushapeObject?: PushapeNotification;
+  private pushapeObject?: PhonegapPluginPush.PushNotification;
 
   constructor() { }
 
-  init(config: PushapeInitOptions) {
+  init(config: PhonegapPluginPushapePush.InitPushapeOptions) {
     this.status.app_id = config.pushape.id_app;
     this.status.internal_id = config.id_user;
     this.status.subscription_status = 'pending';
@@ -67,11 +62,11 @@ export class PushapeService {
     );
   }
 
-  private cordovaInit(config: PushapeInitOptions) {
-    this.pushapeObject = Pushape.init(config) as PushapeNotification;
+  private cordovaInit(config: PhonegapPluginPushapePush.InitPushapeOptions) {
+    this.pushapeObject = PushapeNotification.init(config) as PhonegapPluginPush.PushNotification;
 
     this.pushapeObject.on(PushEvent.REGISTRATION, (serializedData: unknown) => {
-      const data: PushapeEventRegistrationData = JSON.parse(serializedData as string);
+      const data: PhonegapPluginPushapePush.PushapeEventRegistrationData = JSON.parse(serializedData as string);
       this.setRegistrationsData(data);
     });
 
@@ -90,7 +85,7 @@ export class PushapeService {
   /**
    * Set locally the registration data and propagate them to the subscribed functions.
    */
-  private setRegistrationsData(data: PushapeEventRegistrationData) {
+  private setRegistrationsData(data: PhonegapPluginPushapePush.PushapeEventRegistrationData) {
     console.log('[PUSHAPE] Registration\'s data', data);
 
     this.status.push_id = data.push_id;
