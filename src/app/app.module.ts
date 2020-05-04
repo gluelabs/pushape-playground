@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { PushapePush } from '@ionic-native/pushape-push/ngx';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
@@ -23,6 +24,7 @@ import { PushapeService } from './services/pushape.service';
     StatusBar,
     SplashScreen,
     Device,
+    PushapePush,
     PushapeService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],

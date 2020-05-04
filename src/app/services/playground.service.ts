@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Device } from '@ionic-native/device/ngx';
+import { PushapeOptions } from '@ionic-native/pushape-push';
 
 import { BehaviorSubject } from 'rxjs';
 
@@ -73,7 +74,7 @@ export class PlaygroundService {
    * Reload Pushape Subscription with a custom appId
    */
   renewPushape(appId: string) {
-    const pushapeConfig: PhonegapPluginPushapePush.InitPushapeOptions = {
+    const pushapeConfig: PushapeOptions = {
       enabled: true,
       android: {
         senderID: environment.sender_id
@@ -98,7 +99,7 @@ export class PlaygroundService {
     }, 1000);
   }
 
-  getPushapeDefaultConfig(): PhonegapPluginPushapePush.InitPushapeOptions {
+  getPushapeDefaultConfig(): PushapeOptions {
     /**
      * We exec the following line in order to allow to customize the app id
      * NORMALLY we DO NOT expect the appID to change runtime
