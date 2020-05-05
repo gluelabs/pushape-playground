@@ -16,7 +16,7 @@ Remember to add these two variables in `enviroment.ts` and `environment.prod.ts`
 
 ## PushApe
 
-### pushape-plugin-push
+### pushape-cordova-push
 
 After install it (already done in this project) following [Pushape Getting Started](https://github.com/gluelabs/pushape-cordova-push/blob/master/docs/PUSHAPE.md).
 
@@ -45,6 +45,17 @@ Add `google-services.json` from Firebase and check this line inside `config.xml`
 
 In order to configure types follow [Pushape TypeScript](https://github.com/gluelabs/pushape-cordova-push/blob/master/docs/PUSHAPE_TYPESCRIPT.md).
 
+
+### PushapePush (Ionic Native)
+
+Pushape expose also an Ionic Native wrapper: https://github.com/ionic-team/ionic-native/pull/3405/commits/d30bffcfba5d05fdf2d3cb94d6eeeb4c838b3f40#diff-5c2606d42cfe9adc273fb2e73b19ded5
+
+In order to use it follow the example inside the code.
+
+The plugin isn't available yet on NPM.
+
+It will be installed through `npm install --save @ionic-native/pushape-push`.
+
 ## Android
 
 Prepare app and plugins:
@@ -62,4 +73,4 @@ Build app:
 - [ ] Improve error handling UI
 - [ ] Avoid to manually trigger change detection when pushape status change
 - [ ] Test app on iOS
-- [ ] Add Ionic Native plugin instead plain cordova lib
+- [X] Add Ionic Native plugin instead plain cordova lib
