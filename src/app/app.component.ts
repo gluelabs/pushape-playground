@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
-import { PushapeService, PushapeNotification } from './services/pushape.service';
+
 import { version } from '../../package.json';
-import { PlaygroundService } from './services/playground.service';
+
+import { PushapeService } from 'src/app/services/pushape.service';
+import { PlaygroundService } from 'src/app/services/playground.service';
 
 @Component({
   selector: 'app-root',
@@ -12,9 +14,11 @@ import { PlaygroundService } from './services/playground.service';
   styleUrls: ['app.component.scss']
 })
 export class AppComponent implements OnInit {
-  public selectedIndex = 0;
-  public version: string = version;
-  public appPages = [
+  selectedIndex = 0;
+  pushId?: string;
+
+  readonly version = version;
+  readonly appPages = [
     {
       title: 'Home',
       url: '/home',
@@ -27,44 +31,35 @@ export class AppComponent implements OnInit {
     }
   ];
 
-  
-
   constructor(
-    private platform: Platform,
-    private splashScreen: SplashScreen,
-    private statusBar: StatusBar,
-    private pushape: PushapeService,
-    private playground: PlaygroundService
+    private readonly platform: Platform,
+    private readonly splashScreen: SplashScreen,
+    private readonly statusBar: StatusBar,
+    private readonly pushape: PushapeService,
+    private readonly playground: PlaygroundService
   ) {
     this.initializeApp();
   }
 
-  push_id: string;
-
-  initializeApp() {
-    this.platform.ready().then(() => {
-      this.statusBar.styleDefault();
-      this.splashScreen.hide();
-      if(this.playground.isNotificationActivated()){
-        console.log("[APPCOMPONENT] Notifications Enabled");
-        const pushapeConfig = this.playground.getPushapeDefaultConfig();
-        this.pushape.init(pushapeConfig);
-      }else{
-        console.log("[APPCOMPONENT] Notifications Disabled");
-      }
-      
+  ngOnInit() {
+    this.pushape.notification$.subscribe(() => {
+      // Here you can trigger routing events into your application when notifications happens
     });
   }
 
-  ngOnInit() {
+  async initializeApp() {
+    await this.platform.ready();
 
-    this.pushape.notification$.subscribe(
-      (notification: PushapeNotification) => {
-        //Here you can trigger routing events into 
-        //your application when notifications happens
-      }
-    )
+    this.statusBar.styleDefault();
+    this.splashScreen.hide();
+
+    if (this.playground.isNotificationActivated()) {
+      console.log('[APPCOMPONENT] Notifications Enabled');
+
+      const pushapeConfig = this.playground.getPushapeDefaultConfig();
+      this.pushape.init(pushapeConfig);
+    } else {
+      console.log('[APPCOMPONENT] Notifications Disabled');
+    }
   }
-
-
 }

@@ -1,9 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ToastController, AlertController } from '@ionic/angular';
 
+import { switchMap, filter, tap } from 'rxjs/operators';
+
 import { environment } from 'src/environments/environment';
 
-import { PushapeService, PushapeStatus, PushapeNotification } from 'src/app/services/pushape.service';
+import { PushapeService } from 'src/app/services/pushape.service';
 import { PlaygroundService } from 'src/app/services/playground.service';
 
 @Component({
@@ -12,55 +14,48 @@ import { PlaygroundService } from 'src/app/services/playground.service';
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage implements OnInit {
-  pushapeStatus?: PushapeStatus;
-  lastNotification?: PushapeNotification;
 
-  notificationEnabled = this.playground.isNotificationActivated();
+  readonly lastNotification$ = this.pushape.notification$.asObservable().pipe(
+    filter((notification): notification is PhonegapPluginPush.NotificationEventResponse => !!notification),
+    tap(() => this.cd.detectChanges()),
+  );
 
-  defaultAppId: string = environment.pushape_app;
+  readonly pushapeStatus$ = this.pushape.status$.asObservable().pipe(tap(() => this.cd.detectChanges()));
+  readonly notificationEnabled$ = this.playground.isNotificationActivated$.asObservable();
+
+  readonly defaultAppId = environment.pushape_app;
 
   constructor(
-    readonly pushape: PushapeService,
-    private readonly cd: ChangeDetectorRef,
+    private readonly pushape: PushapeService,
     private readonly toast: ToastController,
     private readonly playground: PlaygroundService,
     private readonly alertController: AlertController,
+    private readonly cd: ChangeDetectorRef,
   ) {
   }
 
   ngOnInit() {
-    this.pushape.status$.subscribe((status: PushapeStatus) => {
-      this.pushapeStatus = status;
-      this.cd.detectChanges();
-    });
-
     /**
      * If you need to trigger routing event consider
      * to subscribe to this event emitter in your
      * app.component.ts
+     *
+     * TODO: Need to unsubscribe this stream
      */
-    this.pushape.notification$.subscribe(
-      async (notification: PushapeNotification) => {
-        if (notification) {
-          const toast = await this.toast.create({
+    this.lastNotification$
+      .pipe(
+        switchMap((notification) => {
+          return this.toast.create({
             message: notification.title + ': ' + notification.message,
             duration: 3000,
           });
-          toast.present();
-          this.lastNotification = notification;
-        }
-      }
-    );
-
-    this.playground.isNotificationActivated$.subscribe((r) => {
-      this.notificationEnabled = r;
-      this.cd.detectChanges();
-    });
-
+        }),
+      )
+      .subscribe((toast) => toast.present());
   }
 
-  setNotificationStatus(e) {
-    const targetStatus = e.detail.checked;
+  setNotificationStatus(event: { detail: { checked: boolean } }) {
+    const targetStatus = event.detail.checked;
     this.playground.setNotificationStatus(targetStatus);
 
     if (targetStatus) {
@@ -112,7 +107,7 @@ export class HomePage implements OnInit {
     await alert.present();
   }
 
-  setAppId(appId: string) {
+  private setAppId(appId: string) {
     console.log('setAppId', appId);
     if (appId) {
       this.playground.setAppId(appId);
