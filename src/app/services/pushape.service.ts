@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
+import {
+  PushapePush,
+  NotificationEventResponse,
+  PushObject,
+  PushapeOptions,
+  PushapeRegistrationEventResponse,
+} from '@ionic-native/pushape-push/ngx';
 
 import { BehaviorSubject, Subject } from 'rxjs';
-
-import PushapeNotification from 'pushape-cordova-push/www/push';
-
-import { PushEvent } from 'src/app/models/pushape';
 
 // tslint:disable:variable-name
 export class PushapeStatus {
@@ -26,13 +29,16 @@ export class PushapeService {
   };
 
   readonly status$ = new BehaviorSubject<PushapeStatus>(this.status);
-  readonly notification$ = new Subject<PhonegapPluginPush.NotificationEventResponse | undefined>();
+  readonly notification$ = new Subject<NotificationEventResponse | undefined>();
 
-  private pushapeObject?: PhonegapPluginPush.PushNotification;
+  private pushapeObject?: PushObject;
 
-  constructor() { }
+  constructor(
+    private readonly pushapePush: PushapePush,
+  ) {
+  }
 
-  init(config: PhonegapPluginPushapePush.InitPushapeOptions) {
+  init(config: PushapeOptions) {
     this.status.app_id = config.pushape.id_app;
     this.status.internal_id = config.id_user;
     this.status.subscription_status = 'pending';
@@ -48,33 +54,34 @@ export class PushapeService {
       throw new Error('[PUSHAPE] Cannot complete unregister without a valid pushape object');
     }
 
-    this.pushapeObject.unregister(
-      () => {
+    this.pushapeObject.unregister()
+      .then(() => {
         console.log('[PUSHAPE] Unregister success');
+
         this.status.subscription_status = 'unsubscribed';
         this.propagateStatus();
-      },
-      () => {
+      })
+      .catch(() => {
         console.log('[PUSHAPE] Unregister error');
+
         this.status.subscription_status = 'unsubscribed';
         this.propagateStatus();
-      }
-    );
+      });
   }
 
-  private cordovaInit(config: PhonegapPluginPushapePush.InitPushapeOptions) {
-    this.pushapeObject = PushapeNotification.init(config) as PhonegapPluginPush.PushNotification;
+  private cordovaInit(config: PushapeOptions) {
+    this.pushapeObject = this.pushapePush.init(config);
 
-    this.pushapeObject.on(PushEvent.REGISTRATION, (serializedData: unknown) => {
-      const data: PhonegapPluginPushapePush.PushapeEventRegistrationData = JSON.parse(serializedData as string);
+    this.pushapeObject.on('registration').subscribe((serializedData: unknown) => {
+      const data: PushapeRegistrationEventResponse = JSON.parse(serializedData as string);
       this.setRegistrationsData(data);
     });
 
-    this.pushapeObject.on(PushEvent.NOTIFICATION, (data) => {
+    this.pushapeObject.on('notification').subscribe((data) => {
       this.onNotification(data);
     });
 
-    this.pushapeObject.on(PushEvent.ERROR, (e: Error) => {
+    this.pushapeObject.on('error').subscribe((e: Error) => {
       console.log('[PUSHAPE] Error', e);
 
       this.status.subscription_status = 'error';
@@ -85,7 +92,7 @@ export class PushapeService {
   /**
    * Set locally the registration data and propagate them to the subscribed functions.
    */
-  private setRegistrationsData(data: PhonegapPluginPushapePush.PushapeEventRegistrationData) {
+  private setRegistrationsData(data: PushapeRegistrationEventResponse) {
     console.log('[PUSHAPE] Registration\'s data', data);
 
     this.status.push_id = data.push_id;
