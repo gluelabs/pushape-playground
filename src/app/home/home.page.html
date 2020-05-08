@@ -89,8 +89,8 @@
         <ion-spinner
           name="lines-small"
           *ngIf="(!pushapeStatus)"></ion-spinner>
-        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else subscriptionStatus">N.A.</span>
-        <ng-template #subscriptionStatus>{{pushapeStatus?.internal_id}}</ng-template>
+        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else internalID">N.A.</span>
+        <ng-template #internalID>{{pushapeStatus?.internal_id}}</ng-template>
 
       </ion-label>
     </ion-item>
