@@ -4,7 +4,7 @@ import {
   NotificationEventResponse,
   PushObject,
   PushapeOptions,
-  PushapeRegistrationEventResponse,
+  PushapeRegistrationEventResponse
 } from '@ionic-native/pushape-push/ngx';
 
 import { BehaviorSubject, Subject } from 'rxjs';
@@ -112,7 +112,7 @@ export class PushapeService {
   /**
    * It's triggered when a Notification occur and propagate it to the subscribed funcions.
    */
-  private onNotification(data: PhonegapPluginPush.NotificationEventResponse) {
+  private onNotification(data: NotificationEventResponse) {
     console.log('[PUSHAPE] Notification', data);
     this.notification$.next(data);
   }
