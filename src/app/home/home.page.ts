@@ -107,11 +107,60 @@ export class HomePage implements OnInit {
     await alert.present();
   }
 
+  async changeInternalId() {
+    const alert = await this.alertController.create({
+      header: 'Customize your Internal Id',
+      inputs: [
+        {
+          name: 'internalId',
+          type: 'text',
+          placeholder: 'Your Internal Id',
+        }
+      ],
+
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: () => {
+            console.log('Confirm Cancel');
+          }
+        },
+        {
+          text: 'Back to Default',
+          cssClass: 'secondary',
+          handler: () => {
+            console.log('Set Default');
+            this.setInternalId('Pushape_user');
+          }
+        }, 
+        {
+          text: 'Ok',
+          handler: (input) => {
+            console.log('Confirm Ok', input);
+            this.setInternalId(input.internalId);
+          }
+        }
+      ],
+    });
+    
+    await alert.present();
+  }
+
   private setAppId(appId: string) {
     console.log('setAppId', appId);
     if (appId) {
       this.playground.setAppId(appId);
-      this.playground.renewPushape(appId);
+      this.playground.renewPushape(appId, 'Pushape_user');
+    }
+  }
+
+  private setInternalId(internalId: string) {
+    console.log('setInternalId', internalId);
+    if (internalId) {
+      this.playground.setInternalId(internalId);
+      this.playground.renewPushape('', internalId);
     }
   }
 }

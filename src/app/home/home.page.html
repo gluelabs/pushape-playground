@@ -93,6 +93,14 @@
         <ng-template #internalID>{{pushapeStatus?.internal_id}}</ng-template>
 
       </ion-label>
+
+      <ion-button
+        size="small"
+        (click)="changeInternalId()"
+        [disabled]="!(notificationEnabled$ | async)">
+        Change
+      </ion-button>
+
     </ion-item>
 
   </ion-list>

@@ -34,6 +34,11 @@ export class PlaygroundService {
     return appId || environment.pushape_app;
   }
 
+  getInternalId() {
+    const internalId = window.localStorage.getItem('internalId');
+    return internalId || 'Pushape_user';
+  }
+
   /**
    * Set a different AppId for testing Purpose.
    * This scenario is not the normal flow.
@@ -41,6 +46,13 @@ export class PlaygroundService {
    */
   setAppId(appId: string) {
     window.localStorage.setItem('appId', appId);
+  }
+
+  /**
+   * Set a different InternalId for testing purpose. 
+   */
+  setInternalId(internalId: string) {
+    window.localStorage.setItem('internalId', internalId);
   }
 
   /**
@@ -73,7 +85,11 @@ export class PlaygroundService {
   /**
    * Reload Pushape Subscription with a custom appId
    */
-  renewPushape(appId: string) {
+  renewPushape(appId: string, internalId: string) {
+
+    const _appId = appId || this.getAppId();
+    const _internalId = this.getInternalId() || internalId;
+
     const pushapeConfig: PushapeOptions = {
       enabled: true,
       android: {
@@ -85,11 +101,11 @@ export class PlaygroundService {
         sound: 'false',
       },
       pushape: {
-        id_app: appId || environment.pushape_app,
+        id_app: _appId || environment.pushape_app,
         platform: this.device.platform, // ios or android
         uuid: this.device.uuid,
       },
-      id_user: 'OPTIONAL' // YOUR USER ID, in order to send notification using your custom id
+      id_user: _internalId // YOUR USER ID, in order to send notification using your custom id
     };
 
     this.pushape.unregister();
@@ -107,6 +123,7 @@ export class PlaygroundService {
      * In your app you can just pass the configuration wiht your app id, so remove this line.
      */
     const appId = this.getAppId();
+    const internalId = this.getInternalId();
     return {
       enabled: true,
       android: {
@@ -122,7 +139,7 @@ export class PlaygroundService {
         platform: this.device.platform,
         uuid: this.device.uuid
       },
-      id_user: 'Pushape_user',
+      id_user: internalId,
     };
   }
 }
