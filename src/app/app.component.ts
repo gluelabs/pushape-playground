@@ -5,7 +5,7 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { version } from '../../package.json';
 
-import { PushapeService } from 'src/app/services/pushape.service';
+import { PushapeService, PushapeStatus } from 'src/app/services/pushape.service';
 import { PlaygroundService } from 'src/app/services/playground.service';
 
 @Component({
@@ -58,8 +58,13 @@ export class AppComponent implements OnInit {
 
       const pushapeConfig = this.playground.getPushapeDefaultConfig();
       this.pushape.init(pushapeConfig);
+      
     } else {
       console.log('[APPCOMPONENT] Notifications Disabled');
     }
+
+    this.pushape.status$.subscribe((status: PushapeStatus) => {
+      console.log('[APPCOMPONENT] Pushape Status is',status);
+    })
   }
 }

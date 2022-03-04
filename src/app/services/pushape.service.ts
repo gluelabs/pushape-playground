@@ -47,6 +47,20 @@ export class PushapeService {
     this.cordovaInit(config);
   }
 
+  resetBadge() {
+    if(!this.pushapeObject){
+      console.log('[PUSHAPE] resetBadge ERROR: !this.pushapeObject');
+      return;
+    }
+    this.pushapeObject.clearAllNotifications()
+      .then(() => {
+        console.log('[PUSHAPE] clearAllNotifications SUCCESS');
+      })
+      .catch((err: any) => {
+        console.log('[PUSHAPE] clearAllNotifications ERRORE:', err);
+      })
+  }
+
   unregister() {
     console.log('[PUSHAPE] Unregister');
 

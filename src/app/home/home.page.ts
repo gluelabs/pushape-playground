@@ -35,6 +35,7 @@ export class HomePage implements OnInit {
   }
 
   ngOnInit() {
+    this.pushape.resetBadge();
     /**
      * If you need to trigger routing event consider
      * to subscribe to this event emitter in your

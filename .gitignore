@@ -32,3 +32,6 @@ npm-debug.log*
 /signing
 src/environments
 google-services.json
+GoogleService-Info.plist
+src/environments
+build.json
