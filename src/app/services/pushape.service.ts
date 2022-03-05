@@ -7,7 +7,7 @@ import {
   PushapeRegistrationEventResponse
 } from '@ionic-native/pushape-push/ngx';
 
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 // tslint:disable:variable-name
 export class PushapeStatus {
@@ -30,12 +30,14 @@ export class PushapeService {
 
   readonly status$ = new BehaviorSubject<PushapeStatus>(this.status);
   readonly notification$ = new Subject<NotificationEventResponse | undefined>();
+  readonly hasPermissions$ = new BehaviorSubject<boolean>(false);
 
   private pushapeObject?: PushObject;
 
   constructor(
     private readonly pushapePush: PushapePush,
   ) {
+    this.checkPermissions();
   }
 
   init(config: PushapeOptions) {
@@ -47,8 +49,25 @@ export class PushapeService {
     this.cordovaInit(config);
   }
 
-  resetBadge() {
-    if(!this.pushapeObject){
+  checkPermissions():void {
+    console.log('[PUSHAPE] Check Permission');
+    this.pushapePush.hasPermission(
+      (data: any) => {
+        console.log('[PUSHAPE] Check Permission Data', data);
+        this.hasPermissions$.next(data.isEnabled);
+        if (!data.isEnabled) {
+          console.log('[PUSHAPE] !data.isEnabled, Retry');
+          setTimeout(() => { this.checkPermissions() }, 1000);
+        }
+      }
+    );
+  }
+  getPermissions$():Observable<boolean> {
+    return this.hasPermissions$.asObservable();
+  }
+
+  resetBadge():void {
+    if (!this.pushapeObject) {
       console.log('[PUSHAPE] resetBadge ERROR: !this.pushapeObject');
       return;
     }

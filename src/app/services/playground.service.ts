@@ -16,40 +16,31 @@ import { PushapeService } from 'src/app/services/pushape.service';
 })
 export class PlaygroundService {
   readonly isNotificationActivated$ = new BehaviorSubject(this.isNotificationActivated());
+  internalId: string;
 
   constructor(
     private readonly pushape: PushapeService,
     private readonly device: Device
   ) {
+    this.internalId = this.getInternalId()
+
   }
 
-  /**
-   * Return the app id wrapped into a promise.
-   *
-   * Try to find appId in local storage (to overide the dafault one).
-   * If it doesn't exists return the environment App Id.
-   */
-  getAppId() {
-    const appId = window.localStorage.getItem('appId');
-    return appId || environment.pushape_app;
+  setInternalId(internalId: string) {
+    window.localStorage.setItem('internalId', internalId);
+    this.internalId = internalId;
+    this.renewPushape();
   }
 
-  /**
-   * Set a different AppId for testing Purpose.
-   * This scenario is not the normal flow.
-   * You are expected to use.
-   */
-  setAppId(appId: string) {
-    window.localStorage.setItem('appId', appId);
+  getInternalId(): string {
+    return window.localStorage.getItem('internalId') || 'Pushape_user';
   }
 
-  /**
-   * Set a different AppId for testing Purpose.
-   * This scenario is not the normal flow.
-   * You are expected to use.
-   */
-  resetAppId() {
-    window.localStorage.removeItem('appId');
+
+  resetInternalId() {
+    window.localStorage.removeItem('internalId');
+    this.internalId = 'Pushape_user';
+    this.renewPushape()
   }
 
   /**
@@ -67,13 +58,13 @@ export class PlaygroundService {
    * Activated or Not
    */
   isNotificationActivated() {
-    return window.localStorage.getItem('notificationStatus') === 'DISACTIVATED' ? false : true;
+    return window.localStorage.getItem('notificationStatus') === 'ACTIVATED' ? true : false;
   }
 
   /**
    * Reload Pushape Subscription with a custom appId
    */
-  renewPushape(appId: string) {
+  renewPushape() {
     const pushapeConfig: PushapeOptions = {
       enabled: true,
       android: {
@@ -85,11 +76,11 @@ export class PlaygroundService {
         sound: 'false',
       },
       pushape: {
-        id_app: appId || environment.pushape_app,
+        id_app: environment.pushape_app,
         platform: this.device.platform, // ios or android
         uuid: this.device.uuid,
       },
-      id_user: 'OPTIONAL' // YOUR USER ID, in order to send notification using your custom id
+      id_user: this.internalId
     };
 
     this.pushape.unregister();
@@ -106,7 +97,6 @@ export class PlaygroundService {
      *
      * In your app you can just pass the configuration wiht your app id, so remove this line.
      */
-    const appId = this.getAppId();
     return {
       enabled: true,
       android: {
@@ -118,11 +108,11 @@ export class PlaygroundService {
         sound: 'false'
       },
       pushape: {
-        id_app: appId,
+        id_app: environment.pushape_app,
         platform: this.device.platform,
         uuid: this.device.uuid
       },
-      id_user: 'Pushape_user',
+      id_user: this.internalId,
     };
   }
 }

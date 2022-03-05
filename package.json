@@ -1,6 +1,6 @@
 {
   "name": "pushape-playground",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": "Glue Labs",
   "homepage": "https://pushape.com/",
   "scripts": {
@@ -60,7 +60,7 @@
     "karma-jasmine": "~2.0.1",
     "karma-jasmine-html-reporter": "^1.4.0",
     "protractor": "~5.4.0",
-    "pushape-cordova-push": "^3.0.1",
+    "pushape-cordova-push": "file:../pushape-cordova-push",
     "ts-node": "~7.0.0",
     "tslint": "~5.15.0",
     "typescript": "~3.4.3"
@@ -76,12 +76,12 @@
         "ANDROID_SUPPORT_ANNOTATIONS_VERSION": "27.+"
       },
       "cordova-plugin-ionic-keyboard": {},
+      "cordova-plugin-androidx-adapter": {},
       "pushape-cordova-push": {
         "ANDROIDX_CORE_VERSION": "1.6.+",
         "FCM_VERSION": "18.+",
         "IOS_FIREBASE_MESSAGING_VERSION": "~> 6.32.2"
-      },
-      "cordova-plugin-androidx-adapter": {}
+      }
     },
     "platforms": [
       "ios",

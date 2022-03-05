@@ -11,6 +11,27 @@
   <ion-list>
     <ion-item>
       <ion-label>
+        Permissions:
+        <ion-badge
+          *ngIf="(hasPermission$ | async)"
+          color="success">
+          Enabled
+        </ion-badge>
+        <ion-badge
+          *ngIf="!(hasPermission$ | async)"
+          color="danger">
+          Disabled
+        </ion-badge>
+      </ion-label>
+      <ion-button
+        size="small"
+        (click)="checkPermissions()">
+        Check Permissions
+      </ion-button>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
         Notification:
         <ion-badge
           *ngIf="(notificationEnabled$ | async)"
@@ -29,35 +50,7 @@
         (ionChange)="setNotificationStatus($event)"></ion-toggle>
     </ion-item>
 
-    <ion-item>
-      <ion-label>
-        App Id:
-        <ion-spinner
-          name="lines-small"
-          *ngIf="pushapeStatus?.subscription_status === 'pending'">
-        </ion-spinner>
-        <span *ngIf="pushapeStatus && (pushapeStatus?.app_id === defaultAppId); else custom">
-          <ion-badge color="success">Pushape Default</ion-badge>
-        </span>
-        <ng-template #custom>
-          <span>
-            {{ pushapeStatus?.app_id }}
-            <ion-badge color="warning">Custom</ion-badge>
-          </span>
-        </ng-template>
-        <span *ngIf="!pushapeStatus">
-          <ion-badge color="error">Pushape inactive - No App Id</ion-badge>
-        </span>
-
-      </ion-label>
-      <ion-button
-        size="small"
-        (click)="changeAppId()"
-        [disabled]="!(notificationEnabled$ | async)">
-        Change
-      </ion-button>
-
-    </ion-item>
+  
 
     <ion-item>
       <ion-label>
@@ -93,6 +86,12 @@
         <ng-template #internalID>{{pushapeStatus?.internal_id}}</ng-template>
 
       </ion-label>
+      <ion-button
+        size="small"
+        (click)="changeInternalId()"
+        [disabled]="!(notificationEnabled$ | async)">
+        Customize
+      </ion-button>
     </ion-item>
 
   </ion-list>

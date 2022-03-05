@@ -3,8 +3,6 @@ import { ToastController, AlertController } from '@ionic/angular';
 
 import { switchMap, filter, tap } from 'rxjs/operators';
 
-import { environment } from 'src/environments/environment';
-
 import { PushapeService } from 'src/app/services/pushape.service';
 import { PlaygroundService } from 'src/app/services/playground.service';
 
@@ -22,8 +20,8 @@ export class HomePage implements OnInit {
 
   readonly pushapeStatus$ = this.pushape.status$.asObservable().pipe(tap(() => this.cd.detectChanges()));
   readonly notificationEnabled$ = this.playground.isNotificationActivated$.asObservable();
-
-  readonly defaultAppId = environment.pushape_app;
+  readonly hasPermission$ = this.pushape.getPermissions$();
+  readonly defaultInternalId = 'Pushape_user';
 
   constructor(
     private readonly pushape: PushapeService,
@@ -37,10 +35,6 @@ export class HomePage implements OnInit {
   ngOnInit() {
     this.pushape.resetBadge();
     /**
-     * If you need to trigger routing event consider
-     * to subscribe to this event emitter in your
-     * app.component.ts
-     *
      * TODO: Need to unsubscribe this stream
      */
     this.lastNotification$
@@ -53,6 +47,19 @@ export class HomePage implements OnInit {
         }),
       )
       .subscribe((toast) => toast.present());
+
+      /*
+      this.hasPermission$.subscribe((permission:boolean) => {
+        if(permission){
+          console.log('[Home Page] Has Permission',permission);
+         
+          const config = this.playground.getPushapeDefaultConfig();
+          this.pushape.init(config);
+        }else{
+          console.log('[Home Page] Has NOT Permission',permission);
+        }
+        
+      })*/
   }
 
   setNotificationStatus(event: { detail: { checked: boolean } }) {
@@ -67,15 +74,16 @@ export class HomePage implements OnInit {
     }
   }
 
-  async changeAppId() {
+ 
+  async changeInternalId() {
     const alert = await this.alertController.create({
-      header: 'Customize your App Id',
-      message: 'You can set your Pushape AppId to test your notification stack. <b>You can get a Pushape AppId from www.pushape.com</b>',
+      header: 'Set Internal Id',
+      message: 'You can set your Internal Id to test your notification stack.',
       inputs: [
         {
-          name: 'appId',
+          name: 'internalId',
           type: 'text',
-          placeholder: 'Your App Id'
+          placeholder: 'Your Internal Id'
         },
 
       ],
@@ -93,13 +101,13 @@ export class HomePage implements OnInit {
           cssClass: 'secondary',
           handler: () => {
             console.log('Set Default');
-            this.setAppId(this.defaultAppId);
+            this.playground.resetInternalId();
           }
         }, {
           text: 'Ok',
           handler: (input) => {
             console.log('Confirm Ok', input);
-            this.setAppId(input.appId);
+            this.playground.setInternalId(input.internalId);
           }
         }
       ]
@@ -108,11 +116,8 @@ export class HomePage implements OnInit {
     await alert.present();
   }
 
-  private setAppId(appId: string) {
-    console.log('setAppId', appId);
-    if (appId) {
-      this.playground.setAppId(appId);
-      this.playground.renewPushape(appId);
-    }
+  
+  checkPermissions(){
+    this.pushape.checkPermissions();
   }
 }
