@@ -24,3 +24,14 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+
+#logo{
+    width: 100px;
+}
+p,div,ion-item{
+    color: #555;
+}
+a, a *{
+    color: #3880ff;
+    font-weight: bold;
+}

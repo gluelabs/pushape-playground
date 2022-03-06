@@ -12,96 +12,82 @@
     <ion-item>
       <ion-label>
         Permissions:
-        <ion-badge
-          *ngIf="(hasPermission$ | async)"
-          color="success">
-          Enabled
+        <ion-badge *ngIf="lastPermission" color="success">
+          Granted
         </ion-badge>
-        <ion-badge
-          *ngIf="!(hasPermission$ | async)"
-          color="danger">
+        <ion-badge *ngIf="!lastPermission" color="danger">
           Disabled
         </ion-badge>
       </ion-label>
-      <ion-button
-        size="small"
-        (click)="checkPermissions()">
-        Check Permissions
+      <ion-button size="small" (click)="checkPermissions()">
+        Check Push Permissions
       </ion-button>
     </ion-item>
 
-    <ion-item>
+    <ion-item *ngIf="lastPermission">
       <ion-label>
         Notification:
-        <ion-badge
-          *ngIf="(notificationEnabled$ | async)"
-          color="success">
+        <ion-badge *ngIf="(notificationEnabled$ | async)" color="success">
           Enabled
         </ion-badge>
-        <ion-badge
-          *ngIf="!(notificationEnabled$ | async)"
-          color="danger">
+        <ion-badge *ngIf="!(notificationEnabled$ | async)" color="danger">
           Disabled
         </ion-badge>
       </ion-label>
-      <ion-toggle
-        [ngModel]="notificationEnabled$ | async"
+      <ion-toggle [ngModel]="notificationEnabled$ | async"
         data-no-disabled="!pushapeStatus || pushapeStatus?.subscription_status === 'pending'"
         (ionChange)="setNotificationStatus($event)"></ion-toggle>
     </ion-item>
 
-  
 
-    <ion-item>
+    <ion-item *ngIf="lastPermission">
       <ion-label>
         Pushape PushId:
-        <ion-spinner
-          name="lines-small"
-          *ngIf="pushapeStatus?.subscription_status === 'pending'">
+        <ion-spinner name="lines-small" *ngIf="pushapeStatus?.subscription_status === 'pending'">
         </ion-spinner>
-        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else pushId">N.A.</span>
+        <span
+          *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || pushapeStatus?.subscription_status === 'pending' || !(notificationEnabled$ | async); else pushId">N.A.</span>
         <ng-template #pushId>{{ pushapeStatus?.push_id }}</ng-template>
       </ion-label>
     </ion-item>
 
-    <ion-item>
+    <ion-item *ngIf="lastPermission">
       <ion-label>
         Pushape Subscription:
-        <ion-spinner
-          name="lines-small"
-          *ngIf="(!pushapeStatus || !pushapeStatus?.subscription_status)"></ion-spinner>
-        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else subscriptionStatus">N.A.</span>
+        <ion-spinner name="lines-small" *ngIf="(!pushapeStatus || !pushapeStatus?.subscription_status)"></ion-spinner>
+        <span
+          *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else subscriptionStatus">N.A.</span>
         <ng-template #subscriptionStatus>{{pushapeStatus?.subscription_status}}</ng-template>
 
       </ion-label>
     </ion-item>
 
-    <ion-item>
+    <ion-item *ngIf="lastPermission">
       <ion-label>
         Internal Id:
-        <ion-spinner
-          name="lines-small"
-          *ngIf="(!pushapeStatus)"></ion-spinner>
-        <span *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else internalID">N.A.</span>
+        <ion-spinner name="lines-small" *ngIf="(!pushapeStatus)"></ion-spinner>
+        <span
+          *ngIf="pushapeStatus?.subscription_status === 'unsubscribed' || !(notificationEnabled$ | async); else internalID">N.A.</span>
         <ng-template #internalID>{{pushapeStatus?.internal_id}}</ng-template>
 
       </ion-label>
-      <ion-button
-        size="small"
-        (click)="changeInternalId()"
-        [disabled]="!(notificationEnabled$ | async)">
+      <ion-button size="small" (click)="changeInternalId()" [disabled]="!(notificationEnabled$ | async)">
         Customize
       </ion-button>
     </ion-item>
 
   </ion-list>
+  <div *ngIf="!lastPermission" class="ion-padding ion-text-center text-danger">
+    <h1>Push Permission</h1>
+    <p>Please enable Push Notifications for this app in order to receive them</p>
+    <img id="logo" src="/assets/icon/favicon.png" alt="Pushape" />
 
-  <hr>
-  <div
-    class="last-notification-container"
-    *ngIf="lastNotification$ | async as lastNotification">
+  </div>
+  <div class="last-notification-container" *ngIf="lastNotification$ | async as lastNotification">
+    <hr>
+
     <p>Last Notification received:</p>
-    <div>{{ lastNotification | json }}</div>
+    <pre>{{ lastNotification | json }}</pre>
   </div>
 
 </ion-content>

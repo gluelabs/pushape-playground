@@ -37,10 +37,13 @@ export class PushapeService {
   constructor(
     private readonly pushapePush: PushapePush,
   ) {
-    this.checkPermissions();
+    
+    
   }
 
   init(config: PushapeOptions) {
+    console.log('[PUSHAPE] Init', config);
+    this.checkPermissions();
     this.status.app_id = config.pushape.id_app;
     this.status.internal_id = config.id_user;
     this.status.subscription_status = 'pending';
@@ -49,21 +52,21 @@ export class PushapeService {
     this.cordovaInit(config);
   }
 
-  checkPermissions():void {
+  checkPermissions(){
     console.log('[PUSHAPE] Check Permission');
-    this.pushapePush.hasPermission(
-      (data: any) => {
-        console.log('[PUSHAPE] Check Permission Data', data);
-        this.hasPermissions$.next(data.isEnabled);
-        if (!data.isEnabled) {
-          console.log('[PUSHAPE] !data.isEnabled, Retry');
-          setTimeout(() => { this.checkPermissions() }, 1000);
-        }
+    this.pushapePush.hasPermission().then( (data: any) => {
+      console.log('[PUSHAPE] Check Permission Data', data);
+      if (!data.isEnabled) {
+        console.log('[PUSHAPE] !data.isEnabled, Retry');
+        setTimeout(() => { this.checkPermissions() }, 1500);
+      }else{
+        console.log('[PUSHAPE] data.isEnabled,NO more Retry');
       }
-    );
+      this.hasPermissions$.next(data.isEnabled);
+    });
   }
   getPermissions$():Observable<boolean> {
-    return this.hasPermissions$.asObservable();
+    return this.hasPermissions$;
   }
 
   resetBadge():void {
@@ -149,5 +152,6 @@ export class PushapeService {
     console.log('[PUSHAPE] Notification', data);
     this.notification$.next(data);
   }
+  
 
 }

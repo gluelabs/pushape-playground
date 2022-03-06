@@ -1,10 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ToastController, AlertController } from '@ionic/angular';
 
-import { switchMap, filter, tap } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
 
 import { PushapeService } from 'src/app/services/pushape.service';
 import { PlaygroundService } from 'src/app/services/playground.service';
+import { NotificationEventResponse } from '@ionic-native/pushape-push';
 
 @Component({
   selector: 'app-home',
@@ -13,14 +14,17 @@ import { PlaygroundService } from 'src/app/services/playground.service';
 })
 export class HomePage implements OnInit {
 
-  readonly lastNotification$ = this.pushape.notification$.asObservable().pipe(
-    filter((notification): notification is PhonegapPluginPush.NotificationEventResponse => !!notification),
-    tap(() => this.cd.detectChanges()),
-  );
+  readonly lastNotification$ = this.pushape.notification$
+    .pipe(
+      //filter((notification): notification is PhonegapPluginPush.NotificationEventResponse => !!notification),
+      tap(() => setTimeout(() =>{this.cd.detectChanges()},200)),
+    );/**/
 
   readonly pushapeStatus$ = this.pushape.status$.asObservable().pipe(tap(() => this.cd.detectChanges()));
   readonly notificationEnabled$ = this.playground.isNotificationActivated$.asObservable();
-  readonly hasPermission$ = this.pushape.getPermissions$();
+  readonly hasPermission$ = this.pushape.getPermissions$().pipe(tap(() => this.cd.detectChanges()));
+  lastPermission: boolean = false;
+  ;
   readonly defaultInternalId = 'Pushape_user';
 
   constructor(
@@ -39,7 +43,7 @@ export class HomePage implements OnInit {
      */
     this.lastNotification$
       .pipe(
-        switchMap((notification) => {
+        switchMap((notification: NotificationEventResponse) => {
           return this.toast.create({
             message: notification.title + ': ' + notification.message,
             duration: 3000,
@@ -48,18 +52,20 @@ export class HomePage implements OnInit {
       )
       .subscribe((toast) => toast.present());
 
-      /*
-      this.hasPermission$.subscribe((permission:boolean) => {
-        if(permission){
-          console.log('[Home Page] Has Permission',permission);
-         
+
+    this.hasPermission$.subscribe(
+      (permission: boolean) => {
+        if (!this.lastPermission && permission) {
+          console.log('[Home Page] Permission Activated, Will Init Pushape to prevente false subscriptios');
           const config = this.playground.getPushapeDefaultConfig();
           this.pushape.init(config);
-        }else{
-          console.log('[Home Page] Has NOT Permission',permission);
+        } else {
+          console.log('[Home Page] Permission Update', permission);
         }
-        
-      })*/
+        this.lastPermission = permission;
+
+      })
+    /**/
   }
 
   setNotificationStatus(event: { detail: { checked: boolean } }) {
@@ -74,7 +80,7 @@ export class HomePage implements OnInit {
     }
   }
 
- 
+
   async changeInternalId() {
     const alert = await this.alertController.create({
       header: 'Set Internal Id',
@@ -116,8 +122,8 @@ export class HomePage implements OnInit {
     await alert.present();
   }
 
-  
-  checkPermissions(){
+  checkPermissions() {
     this.pushape.checkPermissions();
   }
+
 }

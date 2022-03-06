@@ -58,7 +58,7 @@ export class PlaygroundService {
    * Activated or Not
    */
   isNotificationActivated() {
-    return window.localStorage.getItem('notificationStatus') === 'ACTIVATED' ? true : false;
+    return window.localStorage.getItem('notificationStatus') === 'DISACTIVATED' ? false : true;
   }
 
   /**
@@ -84,7 +84,6 @@ export class PlaygroundService {
     };
 
     this.pushape.unregister();
-
     setTimeout(() => {
       this.pushape.init(pushapeConfig);
     }, 1000);
